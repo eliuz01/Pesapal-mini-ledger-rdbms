@@ -1,29 +1,31 @@
 from .table import Table
-from .storage import Storage
 
 
 class Database:
-    """
-    Coordinates tables and routes operations to them.
-    """
-
     def __init__(self):
-        self.storage = Storage()
         self.tables = {}
 
-    def create_table(self, name, schema):
+    def create_table(self, name, columns, primary_key=None, unique_keys=None):
         if name in self.tables:
-            raise ValueError(f"Table already exists: {name}")
+            raise ValueError("Table already exists")
 
-        self.tables[name] = Table(name, schema, self.storage)
+        table = Table(name, columns, primary_key, unique_keys)
+        self.tables[name] = table
 
-    def insert(self, table_name, row):
-        self._get_table(table_name).insert(row)
+    def insert(self, table_name, record):
+        table = self.tables.get(table_name)
+        if not table:
+            raise ValueError("Table not found")
+        table.insert(record)
 
     def select_all(self, table_name):
-        return self._get_table(table_name).select_all()
+        table = self.tables.get(table_name)
+        if not table:
+            raise ValueError("Table not found")
+        return table.select_all()
 
-    def _get_table(self, table_name):
-        if table_name not in self.tables:
-            raise ValueError(f"Unknown table: {table_name}")
-        return self.tables[table_name]
+    def find_by_key(self, table_name, key, value):
+        table = self.tables.get(table_name)
+        if not table:
+            raise ValueError("Table not found")
+        return table.find_by_key(key, value)
